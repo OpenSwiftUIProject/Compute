@@ -7,3 +7,6 @@
 
 # Xcode
 xcuserdata
+
+# Tuist
+/Derived
