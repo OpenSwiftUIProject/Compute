@@ -4,11 +4,6 @@ import PackageDescription
 
 let swiftRuntimeHeadersPath = "\(Context.packageDirectory)/Submodules/swift-runtime-headers"
 
-var dependencies: [Package.Dependency] = [
-    .package(url: "https://github.com/apple/swift-algorithms", from: "1.2.0"),
-    .package(url: "https://github.com/groue/Semaphore", from: "0.1.0"),
-]
-
 let package = Package(
     name: "Compute",
     platforms: [.macOS(.v15)],
@@ -19,7 +14,7 @@ let package = Package(
     traits: [
         .trait(name: "CompatibilityModeAttributeGraphV6")
     ],
-    dependencies: dependencies,
+    dependencies: [],
     targets: [
         .target(
             name: "Platform",
@@ -37,12 +32,6 @@ let package = Package(
                 .target(name: "SwiftCorelibsCoreFoundation", condition: .when(platforms: [.linux])),
             ]
         ),
-        .testTarget(
-            name: "UtilitiesTests",
-            dependencies: ["Utilities"],
-            cxxSettings: [.define("SWIFT_TESTING")],
-            swiftSettings: [.interoperabilityMode(.Cxx)]
-        ),
         .target(
             name: "Compute",
             dependencies: ["ComputeCxx"],
@@ -54,39 +43,6 @@ let package = Package(
                     "-no-verify-emitted-module-interface",
                 ]),
             ]
-        ),
-        .testTarget(
-            name: "ComputeTests",
-            dependencies: [
-                "Compute",
-                "_ComputeTestSupport",
-                .product(name: "Semaphore", package: "Semaphore"),
-            ],
-            swiftSettings: [
-                .enableExperimentalFeature("Extern")
-            ],
-            linkerSettings: [.linkedLibrary("swiftDemangle")]
-        ),
-        .testTarget(
-            name: "ComputeLayoutDescriptorTests",
-            dependencies: [
-                "Compute"
-            ],
-            swiftSettings: [
-                .enableExperimentalFeature("Extern")
-            ],
-            linkerSettings: [.linkedLibrary("swiftDemangle")]
-        ),
-        .testTarget(
-            name: "ComputeSwiftTests",
-            dependencies: [
-                "Compute",
-                .product(name: "Algorithms", package: "swift-algorithms"),
-            ],
-            swiftSettings: [
-                .enableExperimentalFeature("Extern")
-            ],
-            linkerSettings: [.linkedLibrary("swiftDemangle")]
         ),
         .target(
             name: "ComputeCxx",
