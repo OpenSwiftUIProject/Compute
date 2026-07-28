@@ -36,6 +36,28 @@ platform_lock Graph::_all_graphs_lock = PLATFORM_LOCK_INIT;
 
 pthread_key_t Graph::_current_update_key = 0;
 
+namespace {
+
+bool attribute_page_is_allocated(AttributeID attribute) {
+    if (!attribute || attribute.is_nil()) {
+        return false;
+    }
+    return data::table::shared().raw_page_seed(attribute.page_ptr()) & 0xff00000000;
+}
+
+bool attribute_zone_is_live(AttributeID attribute) {
+    if (!attribute || attribute.is_nil()) {
+        return false;
+    }
+    auto raw_page_seed = data::table::shared().raw_page_seed(attribute.page_ptr());
+    if (!(raw_page_seed & 0xff00000000)) {
+        return false;
+    }
+    return !data::zone::info::from_raw_value(uint32_t(raw_page_seed)).is_deleted();
+}
+
+} // namespace
+
 Graph::Graph()
     : _heap(nullptr, 0, 0), _interned_types(nullptr, nullptr, nullptr, nullptr, &_heap),
       _contexts_by_id(nullptr, nullptr, nullptr, nullptr, &_heap), _id(IAGMakeUniqueID()) {
@@ -552,23 +574,40 @@ void Graph::remove_indirect_node(data::ptr<IndirectNode> indirect_node) {
 }
 
 void Graph::remove_removed_input(AttributeID attribute, AttributeID input) {
+    // An indirect input in the current invalidation batch can have a deleted
+    // zone while still resolving to a live source, so only require its page to
+    // remain allocated until after resolution.
+    if (!attribute_page_is_allocated(input)) {
+        return;
+    }
+
     auto resolved_input =
         input.resolve(TraversalOptions::SkipMutableReference | TraversalOptions::EvaluateWeakReferences).attribute();
+    if (!attribute_zone_is_live(resolved_input)) {
+        return;
+    }
+
+    auto input_subgraph = resolved_input.subgraph();
+    if (!input_subgraph || input_subgraph->graph() != this || !input_subgraph->is_valid()) {
+        return;
+    }
+
     if (auto input_node = resolved_input.get_node()) {
-        if (!resolved_input.subgraph()->is_invalidated()) {
-            remove_output_edge(input_node, attribute);
-        }
+        remove_output_edge(input_node, attribute);
     } else if (auto input_indirect_node = resolved_input.get_indirect_node()) {
-        if (!resolved_input.subgraph()->is_invalidated()) {
-            if (input_indirect_node->is_mutable()) {
-                remove_output_edge(input_indirect_node.unsafe_cast<MutableIndirectNode>(), attribute);
-            }
+        if (input_indirect_node->is_mutable()) {
+            remove_output_edge(input_indirect_node.unsafe_cast<MutableIndirectNode>(), attribute);
         }
     }
 }
 
 bool Graph::remove_removed_output(AttributeID attribute, AttributeID output, bool option) {
-    if (output.subgraph()->is_invalidated()) {
+    if (!attribute_zone_is_live(output)) {
+        return false;
+    }
+
+    auto output_subgraph = output.subgraph();
+    if (!output_subgraph || output_subgraph->graph() != this || !output_subgraph->is_valid()) {
         return false;
     }
 
