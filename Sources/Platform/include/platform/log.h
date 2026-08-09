@@ -2,7 +2,7 @@
 
 #if __APPLE__
 #include <os/log.h>
-#else
+#elif !defined(__wasi__)
 #include <syslog.h>
 #endif
 

@@ -24,8 +24,8 @@
 #include <math.h>
 #if !defined(__wasi__)
 #include <setjmp.h>
-#endif
 #include <signal.h>
+#endif
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>

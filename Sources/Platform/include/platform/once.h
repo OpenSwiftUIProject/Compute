@@ -1,6 +1,8 @@
 #pragma once
 
-#if __APPLE__
+#if defined(__wasi__)
+#include <stdint.h>
+#elif __APPLE__
 #include <dispatch/dispatch.h>
 #else
 #include <pthread.h>
@@ -11,7 +13,20 @@
 PLATFORM_ASSUME_NONNULL_BEGIN
 PLATFORM_EXTERN_C_BEGIN
 
-#if __APPLE__
+#if defined(__wasi__)
+
+typedef uint8_t platform_once_t;
+typedef void (*platform_once_function_t)(void);
+
+PLATFORM_INLINE
+void platform_once(platform_once_t *predicate, platform_once_function_t function) {
+    if (*predicate == 0) {
+        *predicate = 1;
+        function();
+    }
+}
+
+#elif __APPLE__
 
 typedef dispatch_once_t platform_once_t;
 typedef void (*platform_once_function_t)(void);

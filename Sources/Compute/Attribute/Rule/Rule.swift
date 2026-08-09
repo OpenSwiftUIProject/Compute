@@ -46,6 +46,8 @@ extension Rule {
 }
 
 @_silgen_name("IAGGraphReadCachedAttribute")
+// The C++ ClosureFunction wrapper retains this context while passing it through
+// the cache lookup, so Swift must materialize an escapable closure context.
 func IAGGraphReadCachedAttribute(
     hash: Int,
     type: Metadata,
@@ -54,7 +56,7 @@ func IAGGraphReadCachedAttribute(
     options: CachedValueOptions,
     owner: AnyAttribute,
     changed: UnsafeMutablePointer<Bool>?,
-    typeIndex: (UnownedGraphContext) -> AttributeTypeIndex
+    typeIndex: @escaping (UnownedGraphContext) -> AttributeTypeIndex
 ) -> UnsafeRawPointer
 
 extension Rule where Self: Hashable {
@@ -93,7 +95,7 @@ extension Rule where Self: Hashable {
         owner: AnyAttribute?,
         hashValue: Int,
         bodyPtr: UnsafeRawPointer,
-        update: () -> (UnsafeMutableRawPointer, AnyAttribute) -> Void
+        update: @escaping () -> (UnsafeMutableRawPointer, AnyAttribute) -> Void
     ) -> UnsafePointer<Value> {
         let value = IAGGraphReadCachedAttribute(
             hash: hashValue,

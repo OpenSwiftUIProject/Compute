@@ -35,7 +35,7 @@ let package = Package(
             name: "Utilities",
             dependencies: [
                 "Platform",
-                .target(name: "SwiftCorelibsCoreFoundation", condition: .when(platforms: [.linux])),
+                .target(name: "SwiftCorelibsCoreFoundation", condition: .when(platforms: [.linux, .wasi])),
             ]
         ),
         .testTarget(
@@ -100,7 +100,7 @@ let package = Package(
                 "Platform",
                 "Utilities",
                 "ComputeCxxSwiftSupport",
-                .target(name: "SwiftCorelibsCoreFoundation", condition: .when(platforms: [.linux])),
+                .target(name: "SwiftCorelibsCoreFoundation", condition: .when(platforms: [.linux, .wasi])),
             ],
             cxxSettings: [
                 .headerSearchPath(""),
@@ -114,6 +114,7 @@ let package = Package(
                     "-isystem", "\(swiftRuntimeHeadersPath)/stdlib/include",
                     "-isystem", "\(swiftRuntimeHeadersPath)/stdlib/public/SwiftShims",
                 ]),
+                .unsafeFlags(["-fno-exceptions"], .when(platforms: [.wasi])),
             ],
             linkerSettings: [
                 .linkedLibrary("swiftDemangle")

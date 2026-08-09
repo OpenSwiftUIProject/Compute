@@ -7,5 +7,6 @@
 #include <platform/malloc.h>
 #include <platform/once.h>
 #include <platform/sha.h>
+#include <platform/thread.h>
 #include <platform/time.h>
 #include <platform/vm.h>

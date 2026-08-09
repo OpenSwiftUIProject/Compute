@@ -1,6 +1,22 @@
 #pragma once
 
-#if __APPLE__
+#if defined(__wasi__)
+
+#include <stdbool.h>
+#include <stdint.h>
+
+typedef uint8_t platform_lock;
+
+#define PLATFORM_LOCK_INIT ((platform_lock)0)
+
+static inline void platform_lock_lock(platform_lock *lock) { (void)lock; }
+static inline void platform_lock_unlock(platform_lock *lock) { (void)lock; }
+static inline bool platform_lock_trylock(platform_lock *lock) {
+    (void)lock;
+    return true;
+}
+
+#elif __APPLE__
 
 #include <os/lock.h>
 

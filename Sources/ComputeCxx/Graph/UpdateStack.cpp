@@ -10,7 +10,7 @@
 namespace IAG {
 
 Graph::UpdateStack::UpdateStack(Graph *graph, IAGGraphUpdateOptions options)
-    : _graph(graph), _thread(pthread_self()), _next(current_update()), _next_thread(graph->_current_update_thread),
+    : _graph(graph), _thread(platform_thread_current()), _next(current_update()), _next_thread(graph->_current_update_thread),
       _options(options) {
 
     if (_next != nullptr) {

@@ -1,8 +1,8 @@
 #include "platform/log.h"
 
-#if !TARGET_OS_MAC
+#if !defined(__APPLE__)
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -40,6 +40,19 @@ void platform_log_destroy(platform_log_t log) {
 }
 
 void _platform_log_impl(platform_log_t log, platform_log_type_t type, const char *format, ...) {
+#if defined(__wasi__)
+    const char *level = type >= PLATFORM_LOG_TYPE_FAULT ? "fault"
+                        : type >= PLATFORM_LOG_TYPE_ERROR ? "error"
+                                                          : "info";
+    fprintf(stderr, "[%s:%s] %s: ", log->subsystem ? log->subsystem : "",
+            log->category ? log->category : "", level);
+
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    fputc('\n', stderr);
+#else
     char *message = NULL;
     
     va_list args;
@@ -59,6 +72,7 @@ void _platform_log_impl(platform_log_t log, platform_log_type_t type, const char
         closelog();
         free(message);
     }
+#endif
 }
 
 #endif

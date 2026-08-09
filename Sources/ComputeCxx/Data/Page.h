@@ -20,7 +20,7 @@ struct page {
     uint16_t bytes_list;
     uint16_t const_bytes_list;
 };
-static_assert(sizeof(page) == 0x18);
+static_assert(sizeof(page) == (TARGET_RT_64_BIT ? 0x18 : 0x14));
 
 class page_ptr_list {
   public:

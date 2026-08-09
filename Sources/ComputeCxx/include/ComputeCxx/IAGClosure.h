@@ -13,7 +13,7 @@ typedef struct IAG_SWIFT_NAME(_IAGClosureStorage) IAGClosureStorage {
 
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
-IAGClosureStorage IAGRetainClosure(const void *thunk, const void *_Nullable context);
+IAGClosureStorage IAGRetainClosure(const void *thunk, const void *_Nullable context) IAG_SWIFT_ENTRY;
 
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
