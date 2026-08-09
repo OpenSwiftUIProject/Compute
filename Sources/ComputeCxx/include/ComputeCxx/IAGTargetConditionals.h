@@ -281,3 +281,13 @@
 #endif  /* __TARGETCONDITIONALS__ */
 
 #endif // __has_include
+
+// Apple's TargetConditionals.h does not define the cross-platform additions
+// used by Compute. Keep them available to shared sources on Darwin hosts.
+#ifndef TARGET_OS_WASI
+#define TARGET_OS_WASI 0
+#endif
+
+#ifndef TARGET_CPU_WASM32
+#define TARGET_CPU_WASM32 0
+#endif

@@ -15,6 +15,7 @@
 #include <Utilities/Heap.h>
 #include <Utilities/TaggedPointer.h>
 #include <platform/lock.h>
+#include <platform/thread.h>
 
 #include "Attribute/AttributeID/AttributeID.h"
 #include "Attribute/AttributeType/AttributeType.h"
@@ -113,7 +114,7 @@ class Graph {
     // Threads
     bool _needs_update = false;
     uint32_t _ref_count = 1;
-    pthread_t _current_update_thread = 0;
+    platform_thread_t _current_update_thread = PLATFORM_THREAD_NULL;
 
     uint64_t _id;
     uint64_t _deadline = UINT64_MAX;
@@ -171,7 +172,7 @@ class Graph {
     inline bool update_attribute_checked(data::ptr<Node> node, uint32_t subgraph_id, IAGGraphUpdateOptions options,
                                          IAGChangedValueFlags *_Nullable flags_out);
 
-    static pthread_key_t _current_update_key;
+    static platform_thread_key_t _current_update_key;
 
     bool passed_deadline_slow();
     void collect_stack(vector<data::ptr<Node>, 0, uint64_t> &nodes);
@@ -346,11 +347,11 @@ class Graph {
     // MARK: Update
 
     static util::tagged_ptr<UpdateStack> current_update() {
-        return util::tagged_ptr<UpdateStack>((UpdateStack *)pthread_getspecific(_current_update_key));
+        return util::tagged_ptr<UpdateStack>((UpdateStack *)platform_thread_getspecific(&_current_update_key));
     }
 
     static void set_current_update(util::tagged_ptr<UpdateStack> current_update) {
-        pthread_setspecific(_current_update_key, (void *)current_update.value());
+        platform_thread_setspecific(&_current_update_key, (void *)current_update.value());
     }
 
     void set_deadline(uint64_t deadline) { _deadline = deadline; };

@@ -78,13 +78,15 @@ void Subgraph::clear_object() {
 
 #pragma mark - Current subgraph
 
-pthread_key_t Subgraph::_current_subgraph_key;
+platform_thread_key_t Subgraph::_current_subgraph_key = {};
 
-void Subgraph::make_current_subgraph_key() { pthread_key_create(&_current_subgraph_key, 0); }
+void Subgraph::make_current_subgraph_key() { platform_thread_key_create(&_current_subgraph_key); }
 
-Subgraph *Subgraph::current_subgraph() { return (Subgraph *)pthread_getspecific(_current_subgraph_key); }
+Subgraph *Subgraph::current_subgraph() { return (Subgraph *)platform_thread_getspecific(&_current_subgraph_key); }
 
-void Subgraph::set_current_subgraph(Subgraph *subgraph) { pthread_setspecific(_current_subgraph_key, subgraph); }
+void Subgraph::set_current_subgraph(Subgraph *subgraph) {
+    platform_thread_setspecific(&_current_subgraph_key, subgraph);
+}
 
 #pragma mark - Observers
 

@@ -90,7 +90,7 @@ void IAGGraphWithMainThreadHandler(IAGGraphRef graph,
                                   void (*main_thread_handler)(void (*trampoline_thunk)(const void *),
                                                               const void *trampoline,
                                                               const void *context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                                  const void *main_thread_handler_context);
+                                  const void *main_thread_handler_context) IAG_SWIFT_ENTRY;
 
 // MARK: Subgraphs
 
@@ -111,7 +111,7 @@ IAG_REFINED_FOR_SWIFT
 uint32_t IAGGraphInternAttributeType(IAGUnownedGraphContextRef graph, IAGTypeID type,
                                     const IAGAttributeType *_Nonnull (*_Nonnull make_attribute_type)(
                                         const void *_Nullable context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                                    const void *_Nullable make_attribute_type_context);
+                                    const void *_Nullable make_attribute_type_context) IAG_SWIFT_ENTRY;
 
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
@@ -192,7 +192,7 @@ IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
 bool IAGGraphSearch(IAGAttribute attribute, IAGSearchOptions options,
                    bool (*predicate)(IAGAttribute attribute, const void *context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                   const void *predicate_context);
+                   const void *predicate_context) IAG_SWIFT_ENTRY;
 
 // MARK: Body
 
@@ -200,7 +200,7 @@ IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
 void IAGGraphMutateAttribute(IAGAttribute attribute, IAGTypeID type, bool invalidating,
                             void (*modify)(void *body, const void *context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                            const void *modify_context);
+                            const void *modify_context) IAG_SWIFT_ENTRY;
 
 // MARK: Value
 
@@ -259,7 +259,7 @@ IAG_REFINED_FOR_SWIFT
 void IAGGraphSetInvalidationCallback(IAGGraphRef graph,
                                     void (*callback)(IAGAttribute, const void *context IAG_SWIFT_CONTEXT)
                                         IAG_SWIFT_CC(swift),
-                                    const void *callback_context);
+                                    const void *callback_context) IAG_SWIFT_ENTRY;
 
 // MARK: Cached value
 
@@ -269,7 +269,7 @@ void *IAGGraphReadCachedAttribute(size_t hash, IAGTypeID type, const void *body,
                                  IAGCachedValueOptions options, IAGAttribute owner, bool *_Nullable changed_out,
                                  uint32_t (*closure)(IAGUnownedGraphContextRef graph_context,
                                                      const void *context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                                 const void *closure_context);
+                                 const void *closure_context) IAG_SWIFT_ENTRY;
 
 CF_EXPORT
 CF_REFINED_FOR_SWIFT
@@ -325,7 +325,7 @@ void IAGGraphSetNeedsUpdate(IAGGraphRef graph) IAG_SWIFT_NAME(IAGGraphRef.setNee
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
 void IAGGraphWithUpdate(IAGAttribute attribute, void (*body)(const void *context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                       const void *body_context);
+                       const void *body_context) IAG_SWIFT_ENTRY;
 
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
@@ -336,7 +336,7 @@ IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
 void IAGGraphSetUpdateCallback(IAGGraphRef graph,
                               void (*callback)(const void *context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                              const void *callback_context);
+                              const void *callback_context) IAG_SWIFT_ENTRY;
 
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
@@ -356,7 +356,7 @@ void *_Nullable IAGGraphGetOutputValue(IAGTypeID type);
 
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
-void IAGGraphSetOutputValue(const void *value, IAGTypeID type);
+void IAGGraphSetOutputValue(const void *value, IAGTypeID type) IAG_SWIFT_ENTRY;
 
 // MARK: Description
 

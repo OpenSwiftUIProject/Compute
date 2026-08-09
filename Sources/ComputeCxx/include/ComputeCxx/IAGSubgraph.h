@@ -72,7 +72,7 @@ IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
 IAGUniqueID IAGSubgraphAddObserver(IAGSubgraphRef subgraph,
                                  void (*observer)(const void *_Nullable context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                                 const void *_Nullable observer_context);
+                                 const void *_Nullable observer_context) IAG_SWIFT_ENTRY;
 
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
@@ -143,7 +143,7 @@ IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
 void IAGSubgraphApply(IAGSubgraphRef subgraph, uint32_t options,
                      void (*body)(IAGAttribute, const void *context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                     const void *body_context);
+                     const void *body_context) IAG_SWIFT_ENTRY;
 
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT

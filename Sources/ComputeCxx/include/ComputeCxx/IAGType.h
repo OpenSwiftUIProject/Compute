@@ -82,7 +82,7 @@ void IAGTypeApplyFields(IAGTypeID typeID,
                                      size_t field_offset,
                                      IAGTypeID field_type,
                                      const void *_Nullable context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                       const void *apply_context);
+                       const void *apply_context) IAG_SWIFT_ENTRY;
 
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
@@ -91,7 +91,7 @@ bool IAGTypeApplyFields2(IAGTypeID typeID, IAGTypeApplyOptions options,
                                                size_t field_offset,
                                                IAGTypeID field_type,
                                                const void *context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                        const void *apply_context);
+                        const void *apply_context) IAG_SWIFT_ENTRY;
 
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
@@ -100,7 +100,7 @@ bool IAGTypeApplyEnumData(IAGTypeID typeID, void *value,
                                       IAGTypeID field_type,
                                       const void *field_value,
                                       void *context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                         void *context);
+                         void *context) IAG_SWIFT_ENTRY;
 
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT
@@ -109,7 +109,7 @@ bool IAGTypeApplyMutableEnumData(IAGTypeID typeID, void *value,
                                              IAGTypeID field_type,
                                              void *field_value,
                                              void *context IAG_SWIFT_CONTEXT) IAG_SWIFT_CC(swift),
-                                void *context);
+                                void *context) IAG_SWIFT_ENTRY;
 
 IAG_EXPORT
 IAG_REFINED_FOR_SWIFT

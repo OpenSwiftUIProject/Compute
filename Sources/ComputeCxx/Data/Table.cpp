@@ -2,13 +2,15 @@
 
 #include <algorithm>
 #include <cerrno>
-#include <sys/mman.h>
 #if TARGET_OS_MAC
 #include <mach/mach.h>
-#else
+#include <sys/mman.h>
+#elif !TARGET_OS_WASI
 #include <unistd.h>
 #include <sys/mman.h>
 #endif
+#include <cstdlib>
+#include <cstring>
 
 #include <platform/lock.h>
 #include <platform/malloc.h>
@@ -22,6 +24,13 @@ static void *IAGGraphVMRegionBaseAddress;
 
 namespace IAG {
 namespace data {
+
+#if TARGET_OS_WASI
+// Keep the arena address stable while retaining the existing 1 -> 4 -> 16 -> 64
+// MiB growth tiers. 64 MiB is 1024 WebAssembly linear-memory pages, which is a
+// bounded budget suitable for the browser proof of concept.
+static constexpr uint32_t wasi_arena_capacity = 64u * 1024u * 1024u;
+#endif
 
 table _shared_table_bytes;
 
@@ -46,7 +55,14 @@ std::unique_ptr<void, table::malloc_zone_deleter> table::alloc_persistent(size_t
 table::table() {
     constexpr vm_size_t initial_size = 32 * pages_per_map * page_size;
 
-#if TARGET_OS_MAC
+#if TARGET_OS_WASI
+    static_assert(initial_size <= wasi_arena_capacity);
+    void *region = malloc(wasi_arena_capacity);
+    if (!region) {
+        precondition_failure("memory allocation failure (%u bytes)", wasi_arena_capacity);
+    }
+    memset(region, 0, initial_size);
+#elif TARGET_OS_MAC
     void *region = mmap(nullptr, initial_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
     if (region == MAP_FAILED) {
         precondition_failure("memory allocation failure (%u bytes, %u)", initial_size, errno);
@@ -82,7 +98,9 @@ table::table() {
 }
 
 table::~table() {
-#if !TARGET_OS_MAC
+#if TARGET_OS_WASI
+    free(reinterpret_cast<void *>(_vm_region_base_address));
+#elif !TARGET_OS_MAC
     close(_vm_region_fd);
 #endif
     if (_malloc_zone) {
@@ -104,7 +122,13 @@ void table::grow_region() {
         precondition_failure("exhausted data space");
     }
 
-#if TARGET_OS_MAC
+#if TARGET_OS_WASI
+    if (new_size > wasi_arena_capacity) {
+        precondition_failure("exhausted WASI data arena (%u bytes)", wasi_arena_capacity);
+    }
+    void *new_region = reinterpret_cast<void *>(_vm_region_base_address);
+    memset(static_cast<unsigned char *>(new_region) + _vm_region_size, 0, new_size - _vm_region_size);
+#elif TARGET_OS_MAC
     void *new_region = mmap(nullptr, new_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
     if (new_region == MAP_FAILED) {
         precondition_failure("memory allocation failure (%u bytes, %u)", new_size, errno);
@@ -129,7 +153,9 @@ void table::grow_region() {
     }
 #endif
 
+#if !TARGET_OS_WASI
     _remapped_regions.push_back({this->_vm_region_base_address, this->_vm_region_size});
+#endif
 
     _vm_region_base_address = reinterpret_cast<vm_address_t>(new_region);
     IAGGraphVMRegionBaseAddress = new_region;
@@ -280,11 +306,15 @@ void table::make_pages_reusable(uint32_t page_index, bool reusable) {
     void *mapped_pages_address =
         reinterpret_cast<void *>(_vm_region_base_address + ((page_index * page_size) & ~(mapped_pages_size - 1)));
 
-#if TARGET_OS_MAC
+#if TARGET_OS_WASI
+    // The browser runtime is single-threaded and has no virtual-memory page
+    // reclamation API. Logical reuse is still tracked by the page maps.
+#elif TARGET_OS_MAC
     int advice = reusable ? MADV_FREE_REUSABLE : MADV_FREE_REUSE;
 #else
     int advice = reusable ? MADV_FREE : MADV_NORMAL;
 #endif
+#if !TARGET_OS_WASI
     madvise(mapped_pages_address, mapped_pages_size, advice);
 
     static bool unmap_reusable = []() -> bool {
@@ -299,6 +329,9 @@ void table::make_pages_reusable(uint32_t page_index, bool reusable) {
         int protection = reusable ? PROT_NONE : (PROT_READ | PROT_WRITE);
         mprotect(mapped_pages_address, mapped_pages_size, protection);
     }
+#else
+    (void)mapped_pages_address;
+#endif
 
     _num_reusable_bytes += reusable ? mapped_pages_size : -mapped_pages_size;
 }

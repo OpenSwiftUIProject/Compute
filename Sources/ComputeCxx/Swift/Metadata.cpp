@@ -23,6 +23,21 @@
 namespace IAG {
 namespace swift {
 
+#if TARGET_OS_WASI
+static llvm::StringRef symbolic_mangled_name_ref(const char *base) {
+    const unsigned char *end = reinterpret_cast<const unsigned char *>(base);
+    while (*end != 0) {
+        unsigned char byte = *end++;
+        if (byte >= 0x01 && byte <= 0x17) {
+            end += 4;
+        } else if (byte >= 0x18 && byte <= 0x1f) {
+            end += sizeof(void *);
+        }
+    }
+    return llvm::StringRef(base, reinterpret_cast<const char *>(end) - base);
+}
+#endif
+
 #pragma mark - Metadata
 
 const char *metadata::name(bool qualified) const {
@@ -375,7 +390,11 @@ const metadata *metadata::mangled_type_name_ref(const char *type_name, bool faul
     }
 
     // See https://github.com/swiftlang/swift/blob/main/docs/ABI/Mangling.rst#symbolic-references
+#if TARGET_OS_WASI
+    auto string = symbolic_mangled_name_ref(type_name);
+#else
     auto string = ::swift::Demangle::makeSymbolicMangledNameStringRef(type_name);
+#endif
     auto type = swift_getTypeByMangledNameInContext(string.data(), string.size(), context, generic_args);
     if (!type) {
         if (fault_if_null) {
@@ -759,7 +778,7 @@ bool metadata::visit_heap_locals(metadata_visitor &visitor) const {
          capture_type_record != end; ++capture_type_record) {
         const char *mangled_name = nullptr;
         if (capture_type_record->hasMangledTypeName()) {
-            mangled_name = capture_type_record->getMangledTypeName().data();
+            mangled_name = capture_type_record->MangledTypeName.get();
         }
         metadata::ref_kind kind = metadata::ref_kind::strong;
         const metadata *element_type = mangled_type_name_ref(mangled_name, true, &kind);

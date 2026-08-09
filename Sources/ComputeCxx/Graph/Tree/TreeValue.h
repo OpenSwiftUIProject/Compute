@@ -37,7 +37,7 @@ struct Graph::TreeValue {
     uint32_t flags;
     TreeValueID next;
 };
-static_assert(sizeof(Graph::TreeValue) == 0x18);
+static_assert(sizeof(Graph::TreeValue) == (TARGET_RT_64_BIT ? 0x18 : 0x14));
 
 } // namespace IAG
 

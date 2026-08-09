@@ -30,7 +30,7 @@ class table {
     static std::unique_ptr<void, malloc_zone_deleter> alloc_persistent(size_t size);
 
   private:
-#if !TARGET_OS_MAC
+#if !TARGET_OS_MAC && !TARGET_OS_WASI
     int _vm_region_fd;
 #endif
     vm_address_t _ptr_base;

@@ -21,7 +21,7 @@ class Subgraph::NodeCache {
         Item *lru;
         uint32_t type_id;
     };
-    static_assert(sizeof(Type) == 40);
+    static_assert(sizeof(Type) == (TARGET_RT_64_BIT ? 40 : 20));
     struct Item {
         uint64_t hash_and_age;
         data::ptr<Type> type;
@@ -32,7 +32,7 @@ class Subgraph::NodeCache {
         void increment_age() { hash_and_age += 1; }
         void reset_age() { hash_and_age &= 0xffffffffffffff00; }
     };
-    static_assert(sizeof(Item) == 32);
+    static_assert(sizeof(Item) == (TARGET_RT_64_BIT ? 32 : 24));
     struct ItemKey {
         uint64_t hash_and_age; // age bits are ignored
         data::ptr<Type> type;

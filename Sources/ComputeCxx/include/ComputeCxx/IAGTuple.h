@@ -81,7 +81,7 @@ IAG_REFINED_FOR_SWIFT
 void IAGTupleWithBuffer(IAGTupleType tuple_type, size_t count,
                        void (*function)(const IAGUnsafeMutableTuple mutable_tuple, void *context IAG_SWIFT_CONTEXT)
                            IAG_SWIFT_CC(swift),
-                       void *context);
+                       void *context) IAG_SWIFT_ENTRY;
 
 IAG_EXTERN_C_END
 

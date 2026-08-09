@@ -214,6 +214,15 @@
 #define IAG_SWIFT_INDIRECT_RESULT
 #endif
 
+// @_silgen_name uses Swift's native calling convention. Most supported ABIs
+// lower these entry points like C functions, but wasm32 does not for aggregate
+// and closure parameters.
+#if TARGET_OS_WASI
+#define IAG_SWIFT_ENTRY IAG_SWIFT_CC(swift)
+#else
+#define IAG_SWIFT_ENTRY
+#endif
+
 #if __has_attribute(swift_attr)
 #define IAG_SWIFT_SHARED_REFERENCE(_retain, _release)                        \
   __attribute__((swift_attr("import_reference")))                           \

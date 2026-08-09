@@ -34,7 +34,7 @@ namespace IAG {
 Graph *Graph::_all_graphs = nullptr;
 platform_lock Graph::_all_graphs_lock = PLATFORM_LOCK_INIT;
 
-pthread_key_t Graph::_current_update_key = 0;
+platform_thread_key_t Graph::_current_update_key = {};
 
 namespace {
 
@@ -64,7 +64,7 @@ Graph::Graph()
 
     static platform_once_t make_keys;
     platform_once(&make_keys, []() {
-        pthread_key_create(&Graph::_current_update_key, 0);
+        platform_thread_key_create(&Graph::_current_update_key);
         Subgraph::make_current_subgraph_key();
     });
 
@@ -219,7 +219,7 @@ void Graph::call_main_handler(void *context, void (*body)(void *)) {
 
     struct MainTrampoline {
         Graph *graph;
-        pthread_t thread;
+        platform_thread_t thread;
         void *context;
         void (*handler)(void *);
 
@@ -233,7 +233,7 @@ void Graph::call_main_handler(void *context, void (*body)(void *)) {
     auto main_handler = _main_handler;
     auto main_handler_context = _main_handler_context;
 
-    _current_update_thread = 0;
+    _current_update_thread = PLATFORM_THREAD_NULL;
     _main_handler = nullptr;
     _main_handler_context = nullptr;
 
@@ -353,13 +353,13 @@ uint32_t Graph::intern_type(const swift::metadata *metadata, ClosureFunctionVP<c
 
     size_t self_size = type->body_metadata().vw_size();
     if (self_size >= 0x2000) {
-        platform_log_info(misc_log(), "large attribute self: %u bytes, %s", uint(self_size),
+        platform_log_info(misc_log(), "large attribute self: %u bytes, %s", static_cast<unsigned int>(self_size),
                           type->body_metadata().name(false));
     }
 
     size_t value_size = type->value_metadata().vw_size();
     if (value_size >= 0x2000) {
-        platform_log_info(misc_log(), "large attribute value: %u bytes, %s -> %s", uint(value_size),
+        platform_log_info(misc_log(), "large attribute value: %u bytes, %s -> %s", static_cast<unsigned int>(value_size),
                           type->body_metadata().name(false), type->value_metadata().name(false));
     }
 

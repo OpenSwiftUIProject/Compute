@@ -43,7 +43,7 @@ struct Graph::TreeElement {
 
     Graph::TreeValueID first_value;
 };
-static_assert(sizeof(Graph::TreeElement) == 0x20);
+static_assert(sizeof(Graph::TreeElement) == (TARGET_RT_64_BIT ? 0x20 : 0x1c));
 
 } // namespace IAG
 

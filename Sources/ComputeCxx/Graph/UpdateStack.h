@@ -23,9 +23,9 @@ class Graph::UpdateStack {
     };
 
     Graph *_graph;
-    pthread_t _thread;
+    platform_thread_t _thread;
     util::tagged_ptr<UpdateStack> _next;
-    pthread_t _next_thread;
+    platform_thread_t _next_thread;
     vector<Frame, 8, uint64_t> _frames;
     IAGGraphUpdateOptions _options;
 
