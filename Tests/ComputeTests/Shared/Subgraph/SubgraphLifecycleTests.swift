@@ -28,6 +28,7 @@ struct SubgraphLifecycleTests {
 
     @Suite
     struct SubgraphInvalidateTests {
+        #if !os(Android) // Swift Testing does not support exit tests on Android.
         @Test
         func removedFromGraph() async {
             await #expect(processExitsWith: .failure) {
@@ -39,6 +40,7 @@ struct SubgraphLifecycleTests {
                 print(subgraph.graph)  // will crash
             }
         }
+        #endif
 
         @Test
         func graphCountersDecrementedOnSubgraphInvalidate() {

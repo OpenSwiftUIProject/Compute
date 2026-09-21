@@ -6,6 +6,7 @@ import Testing
 
 @Suite(.serialized(for: \Subgraph.Type.current))
 struct TreeTests {
+    #if !os(Android) // Swift Testing does not support exit tests on Android.
     @Test
     func shouldRecordTree() async throws {
         try await #require(processExitsWith: .success) {
@@ -39,6 +40,8 @@ struct TreeTests {
             #expect(treeRoot.parent == nil)
         }
     }
+
+    #endif
 
     @Test
     func treeRoot() throws {

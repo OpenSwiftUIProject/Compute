@@ -8,7 +8,7 @@ struct GraphTests {
     struct CFTypeTests {
         @Test
         func typeID() {
-            #if os(Linux)
+            #if os(Linux) || os(Android)
             let description = String(cfString: CFCopyTypeIDDescription(Graph.typeID))
             #else
             let description = CFCopyTypeIDDescription(Graph.typeID) as String?
@@ -131,6 +131,7 @@ struct GraphTests {
 
         nonisolated(unsafe) static var internedAttributeType: UnsafeMutablePointer<_AttributeType>? = nil
 
+        #if !os(Android) // Swift Testing does not support exit tests on Android.
         @Test
         func internAttributeTypeInitializesSelfOffsetAndLayout() async throws {
             try await #require(processExitsWith: .success) {
@@ -166,6 +167,7 @@ struct GraphTests {
                 #expect(attributeType?.internal_offset == 28)  // size of Node rounded up to alignment of External<Int>
             }
         }
+        #endif
     }
 
     @Suite

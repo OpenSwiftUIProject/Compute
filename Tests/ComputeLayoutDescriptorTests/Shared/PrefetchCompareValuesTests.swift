@@ -3,7 +3,8 @@ import Testing
 import _ComputeTestSupport
 
 // This suite relies heavily on process isolation, which does not complete on Linux.
-#if !os(Linux)
+// Swift Testing does not support exit tests on Android.
+#if !os(Linux) && !os(Android)
 
 public struct ValueLayout: CustomStringConvertible, Equatable {
     let storage: UnsafePointer<CUnsignedChar>

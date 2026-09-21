@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+
 #include <Utilities/Base.h>
 #include <Utilities/Heap.h>
 #include <Utilities/SwiftBridging.h>

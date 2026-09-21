@@ -13,6 +13,7 @@ extension Triple: Sendable where A: Sendable, B: Sendable, C: Sendable {}
 struct AttributeTests {
     @Suite
     struct InitTests {
+        #if !os(Android) // Swift Testing does not support exit tests on Android.
         @Test
         func initWithValue() async throws {
             try await #require(processExitsWith: .success) {
@@ -153,6 +154,8 @@ struct AttributeTests {
                 #expect(attributeType.body_conformance.witness_table == attributeBody.witnessTable)
             }
         }
+
+        #endif
 
         @Test
         func mainRef() {
