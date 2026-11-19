@@ -1,13 +1,13 @@
 #pragma once
 
-#include <uuid/uuid.h>
-
-#include <Utilities/HashTable.h>
-
 #include <ComputeCxx/IAGGraphTracing.h>
 #include <Utilities/FreeDeleter.h>
 
 #include "ComputeCxx/IAGBase.h"
+#if TARGET_OS_MAC
+#include <uuid/uuid.h>
+#include <Utilities/HashTable.h>
+#endif
 #include "ComputeCxx/IAGGraph.h"
 #include "Protobuf/Encoder.h"
 #include "Trace/Trace.h"
@@ -24,8 +24,10 @@ class Graph::TraceRecorder : public Trace, public Encoder::Delegate {
 
     vector<std::unique_ptr<const char, util::free_deleter>, 0, uint64_t> _named_event_subsystems;
 
+#if TARGET_OS_MAC
     util::Table<const unsigned char *, uint64_t> _image_offset_cache;
     uuid_t _stack_frame_uuid;
+#endif
 
     std::unique_ptr<const char, util::free_deleter> _trace_path = nullptr;
     bool _trace_path_created = false;

@@ -117,7 +117,12 @@ let package = Package(
                 .unsafeFlags(["-fno-exceptions"], .when(platforms: [.wasi])),
             ],
             linkerSettings: [
-                .linkedLibrary("swiftDemangle")
+                // WASI uses the local symbolic-name reader; its SDK does not
+                // provide libswiftDemangle. SwiftPM conditions are allowlists.
+                .linkedLibrary("swiftDemangle", .when(platforms: [
+                    .macOS, .macCatalyst, .iOS, .tvOS, .watchOS, .visionOS,
+                    .driverKit, .linux, .windows, .android, .openbsd,
+                ]))
             ]
         ),
         .target(name: "ComputeCxxSwiftSupport"),

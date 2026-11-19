@@ -5,6 +5,9 @@
 #include <memory>
 #include <ranges>
 #include <span>
+#if TARGET_OS_WASI
+#include <unordered_map>
+#endif
 
 #if TARGET_OS_MAC
 #ifdef __OBJC__
@@ -163,7 +166,34 @@ class Graph {
     vector<std::unique_ptr<AttributeType, AttributeType::deleter>, 0, uint32_t> _types;
 
     // Contexts
+#if TARGET_OS_WASI
+    // Context IDs remain 64-bit on wasm32, while util::Table stores keys in
+    // pointer-sized slots. Preserve the entire ID instead of truncating it.
+    class ContextTable {
+        std::unordered_map<uint64_t, Context *> _entries;
+
+      public:
+        Context *_Nullable lookup(uint64_t key, uint64_t *_Nullable found_key) const noexcept {
+            auto found = _entries.find(key);
+            if (found_key) {
+                *found_key = found != _entries.end() ? found->first : 0;
+            }
+            return found != _entries.end() ? found->second : nullptr;
+        }
+
+        bool insert(uint64_t key, Context *value) { return _entries.insert_or_assign(key, value).second; }
+        bool remove(uint64_t key) { return _entries.erase(key) != 0; }
+
+        void for_each(void (*body)(uint64_t, Context *, void *_Nullable), void *_Nullable context) const {
+            for (const auto &[key, value] : _entries) {
+                body(key, value, context);
+            }
+        }
+    };
+    ContextTable _contexts_by_id;
+#else
     util::Table<uint64_t, Context *> _contexts_by_id;
+#endif
 
     // Trace
     vector<Trace *, 0, uint32_t> _traces;

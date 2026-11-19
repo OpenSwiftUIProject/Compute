@@ -65,7 +65,10 @@ bool attribute_zone_is_live(AttributeID attribute) {
 
 Graph::Graph()
     : _heap(nullptr, 0, 0), _interned_types(nullptr, nullptr, nullptr, nullptr, &_heap),
-      _contexts_by_id(nullptr, nullptr, nullptr, nullptr, &_heap), _id(IAGMakeUniqueID()) {
+#if !TARGET_OS_WASI
+      _contexts_by_id(nullptr, nullptr, nullptr, nullptr, &_heap),
+#endif
+      _id(IAGMakeUniqueID()) {
 
     data::table::ensure_shared();
 
@@ -246,7 +249,7 @@ void Graph::call_main_handler(void *context, void (*body)(void *)) {
         };
     };
 
-    pthread_t current_update_thread = _current_update_thread;
+    platform_thread_t current_update_thread = _current_update_thread;
     auto main_handler = _main_handler;
     const auto *main_handler_context = _main_handler_context;
 

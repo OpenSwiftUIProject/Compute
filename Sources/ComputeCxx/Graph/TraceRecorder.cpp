@@ -1,14 +1,17 @@
 #include "TraceRecorder.h"
 
 #include <algorithm>
+#include <fcntl.h>
+#include <unistd.h>
+#if TARGET_OS_MAC
 #include <dlfcn.h>
 #include <execinfo.h>
-#include <fcntl.h>
 #include <uuid/uuid.h>
+#include <ptrauth.h>
+#endif
 #if TARGET_OS_MAC && TARGET_OS_OSX
 #include <mach/mach_vm.h>
 #endif
-#include <ptrauth.h>
 #include <ranges>
 
 #include "Attribute/AttributeData/Node/IndirectNode.h"
@@ -24,6 +27,7 @@
 
 namespace IAG {
 
+#if TARGET_OS_MAC
 namespace {
 
 uint64_t uuid_hash(const uuid_t key) {
@@ -35,11 +39,15 @@ uint64_t uuid_hash(const uuid_t key) {
 bool uuid_equal(const uuid_t a, const uuid_t b) { return uuid_compare(a, b) == 0; }
 
 } // namespace
+#endif
 
 Graph::TraceRecorder::TraceRecorder(Graph &graph, IAGGraphTraceFlags trace_flags, std::span<const char *> subsystems)
-    : _graph(graph), _encoder(this, 0x10000), _trace_flags(trace_flags),
-      _image_offset_cache(
-          uuid_hash, uuid_equal, [](const uuid_t key) { free((unsigned char *)key); }, nullptr, nullptr) {
+    : _graph(graph), _encoder(this, 0x10000), _trace_flags(trace_flags)
+#if TARGET_OS_MAC
+      , _image_offset_cache(
+          uuid_hash, uuid_equal, [](const uuid_t key) { free((unsigned char *)key); }, nullptr, nullptr)
+#endif
+{
     for (const auto *subsystem : subsystems) {
         _named_event_subsystems.push_back(std::unique_ptr<const char, util::free_deleter>(strdup(subsystem)));
     }
@@ -96,7 +104,11 @@ int Graph::TraceRecorder::flush_encoder(Encoder &encoder) {
 
         if (_trace_path) {
             platform_log_info(misc_log(), "created trace file %s", _trace_path.get());
+#if TARGET_OS_WASI
+            fprintf(stdout, "created trace file \"%s\"\n", _trace_path.get());
+#else
             fprintf(stdout, "created trace file \"%s\" (pid %d)\n", _trace_path.get(), getpid());
+#endif
         } else {
             fprintf(stdout, "failed to create trace file: %s%s%s-XXXX.ag-trace\n", dir, separator, trace_file);
         }
