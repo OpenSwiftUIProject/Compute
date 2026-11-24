@@ -16,7 +16,7 @@ extension Subgraph: @retroactive Equatable {
     }
 }
 
-#if os(Linux)
+#if os(Linux) || os(Android)
 extension String {
     init?(cfString: CFString) {
         if let pointer = CFStringGetCStringPtr(cfString, CFStringBuiltInEncodings.UTF8.rawValue) {

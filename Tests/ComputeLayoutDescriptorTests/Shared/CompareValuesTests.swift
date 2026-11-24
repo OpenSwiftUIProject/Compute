@@ -1,6 +1,8 @@
 import Foundation
 import Testing
 
+#if !os(Android) // Swift Testing does not support exit tests on Android.
+
 /// A type that can be equal without being bitwise identical.
 struct Parity: Equatable, RawRepresentable {
     var rawValue: Int
@@ -265,3 +267,5 @@ struct CompareValuesTests {
     }
 
 }
+
+#endif

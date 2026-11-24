@@ -8,7 +8,7 @@ struct SubgraphTests {
     struct CFTypeTests {
         @Test
         func typeID() {
-            #if os(Linux)
+            #if os(Linux) || os(Android)
             let description = String(cfString: CFCopyTypeIDDescription(Subgraph.typeID))
             #else
             let description = CFCopyTypeIDDescription(Subgraph.typeID) as String?

@@ -1,5 +1,9 @@
 import Foundation
 
+#if os(Android)
+import Android
+#endif
+
 /// Additionally writes any data written to standard output into the given output stream.
 ///
 /// - Parameters:
