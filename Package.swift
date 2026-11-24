@@ -25,7 +25,7 @@ let package = Package(
         .target(
             name: "Platform",
             cSettings: [
-                .define("_GNU_SOURCE", .when(platforms: [.linux]))
+                .define("_GNU_SOURCE", .when(platforms: [.linux, .android]))
             ]
         ),
         .target(
@@ -35,7 +35,7 @@ let package = Package(
             name: "Utilities",
             dependencies: [
                 "Platform",
-                .target(name: "SwiftCorelibsCoreFoundation", condition: .when(platforms: [.linux])),
+                .target(name: "SwiftCorelibsCoreFoundation", condition: .when(platforms: [.linux, .android])),
             ]
         ),
         .testTarget(
@@ -100,12 +100,12 @@ let package = Package(
                 "Platform",
                 "Utilities",
                 "ComputeCxxSwiftSupport",
-                .target(name: "SwiftCorelibsCoreFoundation", condition: .when(platforms: [.linux])),
+                .target(name: "SwiftCorelibsCoreFoundation", condition: .when(platforms: [.linux, .android])),
             ],
             cxxSettings: [
                 .headerSearchPath(""),
                 .headerSearchPath("internalInclude"),
-                .define("_GNU_SOURCE", .when(platforms: [.linux])),
+                .define("_GNU_SOURCE", .when(platforms: [.linux, .android])),
                 .unsafeFlags([
                     "-static",
                     "-DCOMPILED_WITH_SWIFT",
@@ -116,7 +116,10 @@ let package = Package(
                 ]),
             ],
             linkerSettings: [
-                .linkedLibrary("swiftDemangle")
+                .linkedLibrary(
+                    "swiftDemangle",
+                    .when(platforms: [.macOS, .macCatalyst, .iOS, .tvOS, .watchOS, .visionOS, .linux])
+                )
             ]
         ),
         .target(name: "ComputeCxxSwiftSupport"),
