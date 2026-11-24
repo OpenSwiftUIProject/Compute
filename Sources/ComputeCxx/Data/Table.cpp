@@ -10,6 +10,10 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #endif
+#if defined(__ANDROID__) && __ANDROID_API__ < 30
+#include <linux/memfd.h>
+#include <sys/syscall.h>
+#endif
 
 #include <platform/lock.h>
 #include <platform/malloc.h>
@@ -54,7 +58,12 @@ table::table() {
         precondition_failure("memory allocation failure (%u bytes, %u)", initial_size, errno);
     }
 #else
+#if defined(__ANDROID__) && __ANDROID_API__ < 30
+    // Bionic exposes memfd_create starting at API 30; older targets use the syscall.
+    _vm_region_fd = static_cast<int>(syscall(SYS_memfd_create, "IAGGraphVMRegion", MFD_CLOEXEC));
+#else
     _vm_region_fd = memfd_create("IAGGraphVMRegion", MFD_CLOEXEC);
+#endif
     if (_vm_region_fd < 0) {
         precondition_failure("memfd_create failure (%u)", errno);
     }
